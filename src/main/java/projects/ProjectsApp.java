@@ -15,10 +15,13 @@ public class ProjectsApp {
 
 	private Scanner scanner = new Scanner(System.in);
 	private ProjectService projectService = new ProjectService();
+	private Project curProject;
 
 //		DbConnection.getConnection();
 	// @formatter:off
-	private List<String> operations = List.of("1) Add a project"
+	private List<String> operations = List.of("1) Add a project",
+			"2) List projects",
+			"3) Select a project"
 			);
 	// @formatter:on
 
@@ -37,11 +40,18 @@ public class ProjectsApp {
 				case -1:
 					done = exitMenu();
 					break;
-					
+
 				case 1:
 					createProject();
 					break;
 
+				case 2:
+					listProjects();
+					break;
+
+				case 3:
+					selectProject();
+					break;
 
 				default:
 					System.out.println("\n" + selection + " is not a valid selection. Try again.");
@@ -55,6 +65,25 @@ public class ProjectsApp {
 
 	}
 
+	private void selectProject() {
+		listProjects();
+
+		Integer projectId = getIntInput("Enter a project ID to select a project");
+
+		curProject = null;
+
+		curProject = projectService.fetchProjectById(projectId);
+	}
+
+	private void listProjects() {
+		List<Project> projects = projectService.fetchAllProjects();
+
+		System.out.println("\nProjects:");
+
+		projects.forEach(project -> System.out.println(" " + project.getProjectId() + ": " + project.getProjectName()));
+
+	}
+
 	private void createProject() {
 		String projectName = getStringInput("Enter the project name");
 		BigDecimal estimatedHours = getDecimalInput("Enter the estimated hours");
@@ -63,17 +92,16 @@ public class ProjectsApp {
 		String notes = getStringInput("Enter the project notes");
 
 		Project project = new Project();
-		
-	    project.setProjectName(projectName);
-	    project.setEstimatedHours(estimatedHours);
-	    project.setActualHours(actualHours);
-	    project.setDifficulty(difficulty);
-	    project.setNotes(notes);
-	
-	    
-	    Project dbProject = projectService.addProject(project);
-	    System.out.println("You have succesfully created project: " + dbProject);
-		
+
+		project.setProjectName(projectName);
+		project.setEstimatedHours(estimatedHours);
+		project.setActualHours(actualHours);
+		project.setDifficulty(difficulty);
+		project.setNotes(notes);
+
+		Project dbProject = projectService.addProject(project);
+		System.out.println("You have succesfully created project: " + dbProject);
+
 	}
 
 	private BigDecimal getDecimalInput(String prompt) {
@@ -97,7 +125,7 @@ public class ProjectsApp {
 
 	private int getUserSelection() {
 		printOperations();
-		Integer input = getIntInput("Enter an menu selection)");
+		Integer input = getIntInput("Enter a menu selection)");
 		return Objects.isNull(input) ? -1 : input;
 	}
 
@@ -125,6 +153,12 @@ public class ProjectsApp {
 	private void printOperations() {
 		System.out.println("\nThese are the available selections. press the Enter key to quit:");
 		operations.forEach(line -> System.out.println("   " + line));
+
+		if (Objects.isNull(curProject)) {
+			System.out.println("\nYou are not working with a project.");
+		} else {
+			System.out.println("\nYou are working with project " + curProject);
+		}
 	}
 
 }
